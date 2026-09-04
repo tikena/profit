@@ -1,0 +1,311 @@
+/* =========================================================================
+   Profit — direction visuelle "registre comptable"
+   Palette : encre marine profonde + laiton (couleur monnaie ancienne)
+   Typo : Fraunces (serif à empattement marqué, esprit tampon/en-tête de
+          registre) pour les titres, Inter pour le texte courant,
+          IBM Plex Mono pour tous les chiffres (chiffres tabulaires,
+          comme sur un vrai relevé comptable).
+   Signature : le sceau circulaire "PRO" légèrement incliné, qui marque
+          visuellement le déverrouillage — écho au tampon qu'on appose
+          sur un document validé.
+   ========================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+:root {
+  --ink-900: #0f1b2d;
+  --ink-800: #16243b;
+  --ink-700: #1f3350;
+  --paper: #e8e4da;
+  --paper-dim: #b9b6ad;
+  --brass: #c9a227;
+  --brass-bright: #e0bd4a;
+  --ledger-green: #4c9a6a;
+  --ledger-red: #b2503a;
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ink-900);
+  color: var(--paper);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.figures, .amount, .price, table.ledger td.num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+h1, h2, h3, .brand {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+a { color: inherit; }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 32px;
+  border-bottom: 1px solid var(--ink-700);
+}
+
+.brand {
+  font-size: 20px;
+  color: var(--brass-bright);
+}
+
+.container {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 64px 24px;
+}
+
+.ledger-rule {
+  border: none;
+  border-top: 1px dashed var(--ink-700);
+  margin: 40px 0;
+}
+
+/* ---- Paywall / carte de blocage ---- */
+
+.paywall-card {
+  background: var(--ink-800);
+  border: 1px solid var(--ink-700);
+  border-radius: var(--radius);
+  padding: 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.paywall-card .eyebrow {
+  color: var(--paper-dim);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 8px;
+}
+
+.paywall-card h2 {
+  font-size: 28px;
+  margin: 0 0 16px;
+}
+
+.finding-line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ink-700);
+  color: var(--paper-dim);
+}
+
+.finding-line:last-of-type { border-bottom: none; }
+
+.finding-line .num {
+  color: var(--brass);
+  font-size: 13px;
+  width: 22px;
+}
+
+/* Le sceau : élément signature de la page, incliné comme un vrai tampon
+   apposé sur un registre. Un seul par page — c'est là qu'on dépense
+   tout le "risque visuel" du design. */
+.seal {
+  --size: 92px;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  border: 2.5px solid var(--brass);
+  color: var(--brass-bright);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  transform: rotate(-8deg);
+  position: absolute;
+  top: 28px;
+  right: 32px;
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  opacity: 0.92;
+}
+
+.seal::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid var(--brass);
+  border-radius: 50%;
+  opacity: 0.6;
+}
+
+.seal .top {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+}
+
+.seal .main {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.plans {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.currency-switch {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--paper-dim);
+}
+
+.currency-switch select {
+  background: var(--ink-800);
+  color: var(--paper);
+  border: 1px solid var(--ink-700);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+}
+
+.currency-switch select:focus-visible {
+  outline: 2px solid var(--brass-bright);
+  outline-offset: 1px;
+}
+
+@media (max-width: 720px) {
+  .plans { grid-template-columns: 1fr; }
+  .seal { position: static; transform: rotate(-4deg); margin-bottom: 16px; }
+}
+
+.plan-card {
+  background: var(--ink-900);
+  border: 1px solid var(--ink-700);
+  border-radius: var(--radius);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.plan-card.featured {
+  border-color: var(--brass);
+  box-shadow: 0 0 0 1px var(--brass) inset;
+}
+
+.plan-name {
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
+}
+
+.plan-price {
+  font-size: 28px;
+  color: var(--brass-bright);
+}
+
+.plan-price .period {
+  font-size: 13px;
+  color: var(--paper-dim);
+  font-family: 'Inter', sans-serif;
+}
+
+.plan-features {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  color: var(--paper-dim);
+  font-size: 14px;
+  line-height: 1.9;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--brass-bright);
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  background: var(--brass);
+  color: var(--ink-900);
+}
+
+.btn-primary:hover { background: var(--brass-bright); }
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--ink-700);
+  color: var(--paper);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn { transition: none; }
+}
+
+/* ---- Auth (login/register) ---- */
+
+.auth-card {
+  max-width: 400px;
+  margin: 0 auto;
+  background: var(--ink-800);
+  border: 1px solid var(--ink-700);
+  border-radius: var(--radius);
+  padding: 32px;
+}
+
+.field { margin-bottom: 18px; }
+
+.field label {
+  display: block;
+  font-size: 13px;
+  color: var(--paper-dim);
+  margin-bottom: 6px;
+}
+
+.field input {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--ink-900);
+  border: 1px solid var(--ink-700);
+  border-radius: 6px;
+  color: var(--paper);
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+}
+
+.field input:focus-visible {
+  outline: 2px solid var(--brass-bright);
+  outline-offset: 1px;
+}
+
+.error-msg {
+  color: var(--ledger-red);
+  font-size: 13px;
+  margin-top: 12px;
+  min-height: 1em;
+}

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Débloquer l'analyse complète — Profit{% endblock %}
+{% block content %}
+<div class="container">
+
+  <div class="paywall-card">
+    <div class="seal">
+      <span class="top">DÉVERROUILLÉ</span>
+      <span class="main">PRO</span>
+    </div>
+
+    <p class="eyebrow">Analyse du mois</p>
+    <h2>Bénéfice ce mois-ci : <span class="figures">2 430&nbsp;€</span></h2>
+    <p style="color: var(--paper-dim); max-width: 460px;">
+      Nous avons détecté 4 problèmes qui réduisent votre rentabilité.
+      L'analyse détaillée et les recommandations sont réservées aux comptes Pro.
+    </p>
+
+    <div class="finding-line"><span class="num figures">01</span> Marge en baisse sur un produit phare</div>
+    <div class="finding-line"><span class="num figures">02</span> Une campagne publicitaire dépense plus qu'elle ne rapporte</div>
+    <div class="finding-line"><span class="num figures">03</span> Frais de livraison en hausse depuis 3 semaines</div>
+    <div class="finding-line"><span class="num figures">04</span> Un produit à fort potentiel sous-exploité</div>
+  </div>
+
+  <hr class="ledger-rule">
+
+  <div class="currency-switch">
+    <label for="currency-select">Afficher les prix en</label>
+    <select id="currency-select"></select>
+  </div>
+
+  <div class="plans" id="plans">
+    <div class="plan-card">
+      <span class="plan-name">Free</span>
+      <div class="plan-price figures">0<span class="period" data-currency-suffix></span></div>
+      <ul class="plan-features">
+        <li>Tableau de bord de base</li>
+        <li>Import de données limité</li>
+        <li>Calcul du bénéfice et de la marge</li>
+      </ul>
+      <button class="btn btn-ghost" disabled>Plan actuel</button>
+    </div>
+
+    <div class="plan-card featured">
+      <span class="plan-name">Pro</span>
+      <div class="plan-price figures" data-plan="pro_monthly">
+        <span data-price-amount></span><span class="period" data-price-suffix></span>
+      </div>
+      <ul class="plan-features">
+        <li>Analyse complète par IA</li>
+        <li>Recommandations personnalisées</li>
+        <li>Simulateur « Et si ? »</li>
+        <li>Alertes intelligentes</li>
+      </ul>
+      <button class="btn btn-primary" data-plan-id="pro_monthly">Débloquer avec Pro</button>
+    </div>
+
+    <div class="plan-card">
+      <span class="plan-name">Business</span>
+      <div class="plan-price figures" data-plan="business_monthly">
+        <span data-price-amount></span><span class="period" data-price-suffix></span>
+      </div>
+      <ul class="plan-features">
+        <li>Plusieurs boutiques</li>
+        <li>Plusieurs utilisateurs</li>
+        <li>Rapports avancés</li>
+      </ul>
+      <button class="btn btn-ghost" data-plan-id="business_monthly">Passer à Business</button>
+    </div>
+  </div>
+
+  <p class="error-msg" id="pricing-error"></p>
+</div>
+
+<script src="{{ url_for('static', filename='js/payments.js') }}"></script>
+{% endblock %}

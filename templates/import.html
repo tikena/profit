@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Importer des données — Profit{% endblock %}
+{% block content %}
+<div class="container">
+  <h1>Importer vos ventes et dépenses</h1>
+
+  <div class="panel">
+    <h3>Import CSV</h3>
+    <p style="color: var(--paper-dim); font-size: 14px;">
+      Colonnes attendues : <code>type,category,amount,date,product,description</code><br>
+      — <strong>type</strong> : <code>revenu</code> ou <code>depense</code><br>
+      — <strong>date</strong> : au format <code>AAAA-MM-JJ</code> (ou <code>JJ/MM/AAAA</code>)<br>
+      — <strong>product</strong> et <strong>description</strong> sont optionnelles
+    </p>
+    <form id="csv-form">
+      <input type="file" id="csv-file" accept=".csv" required>
+      <button type="submit" class="btn btn-primary" style="margin-top: 12px;">Importer le fichier</button>
+    </form>
+    <p class="error-msg" id="csv-error"></p>
+    <p id="csv-success" style="color: var(--ledger-green); font-size: 14px;"></p>
+  </div>
+
+  <div class="panel">
+    <h3>Ajouter une transaction manuellement</h3>
+    <form id="manual-form">
+      <div class="field">
+        <label for="m-type">Type</label>
+        <select id="m-type" required>
+          <option value="revenu">Revenu (vente)</option>
+          <option value="depense">Dépense</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="m-category">Catégorie</label>
+        <input type="text" id="m-category" placeholder="ex : vente, publicité, livraison" required>
+      </div>
+      <div class="field">
+        <label for="m-amount">Montant</label>
+        <input type="number" id="m-amount" step="0.01" min="0.01" required>
+      </div>
+      <div class="field">
+        <label for="m-date">Date</label>
+        <input type="date" id="m-date" required>
+      </div>
+      <div class="field">
+        <label for="m-product">Produit (optionnel)</label>
+        <input type="text" id="m-product" placeholder="ex : T-shirt bleu">
+      </div>
+      <div class="field">
+        <label for="m-description">Description (optionnel)</label>
+        <input type="text" id="m-description">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width: 100%;">Ajouter</button>
+    </form>
+    <p class="error-msg" id="manual-error"></p>
+    <p id="manual-success" style="color: var(--ledger-green); font-size: 14px;"></p>
+  </div>
+
+  <a href="{{ url_for('dashboard.dashboard_page') }}" class="btn btn-ghost">← Retour au tableau de bord</a>
+</div>
+
+<script src="{{ url_for('static', filename='js/import.js') }}"></script>
+{% endblock %}

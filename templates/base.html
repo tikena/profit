@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Profit{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+</head>
+<body>
+  <div class="topbar">
+    <span class="brand">Profit</span>
+    <span class="figures" style="color: var(--paper-dim); font-size: 13px;">
+      {% if user %}{{ user.email }} · {{ user.plan.value|upper }}{% endif %}
+    </span>
+  </div>
+  {% block content %}{% endblock %}
+</body>
+</html>

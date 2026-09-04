@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Tableau de bord — Profit{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="dash-header">
+    <h1>Tableau de bord</h1>
+    <select id="period-select">
+      <option value="7d">7 derniers jours</option>
+      <option value="30d" selected>30 derniers jours</option>
+      <option value="month">Ce mois-ci</option>
+      <option value="year">Cette année</option>
+    </select>
+  </div>
+
+  <div id="empty-state" class="empty-state" style="display: none;">
+    <p>Aucune donnée sur cette période.</p>
+    <a href="{{ url_for('dashboard.import_page') }}" class="btn btn-primary">Importer vos ventes et dépenses</a>
+  </div>
+
+  <div id="dashboard-content" style="display: none;">
+    <div class="kpi-grid" id="kpi-grid"></div>
+
+    <div class="dash-grid-2col">
+      <div class="panel">
+        <h3>Tendance sur 6 mois</h3>
+        <canvas id="trend-chart" height="220"></canvas>
+      </div>
+      <div class="panel">
+        <h3>Répartition des dépenses</h3>
+        <canvas id="expense-chart" height="220"></canvas>
+      </div>
+    </div>
+
+    <div class="dash-grid-2col">
+      <div class="panel">
+        <h3>Business Health Score</h3>
+        <div id="health-score"></div>
+      </div>
+      <div class="panel">
+        <h3>Alertes</h3>
+        <div id="alerts-list"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Conseiller Profit</h3>
+      <div id="advisor-insights"></div>
+    </div>
+
+    <div class="panel">
+      <div style="display:flex; justify-content: space-between; align-items: center;">
+        <h3>Produits les plus rentables</h3>
+        <a href="{{ url_for('dashboard.products_page') }}">Voir tous les produits →</a>
+      </div>
+      <table class="data-table" id="top-products-table">
+        <thead>
+          <tr><th>Produit</th><th>CA</th><th>Bénéfice</th><th>Marge</th></tr>
+        </thead>
+        <tbody id="top-products-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Simulateur — Profit{% endblock %}
+{% block content %}
+<div class="container">
+  <h1>Simulateur « Et si ? »</h1>
+  <p style="color: var(--paper-dim); font-size: 14px; margin-bottom: 24px;">
+    Basé sur vos 30 derniers jours de données. Ce sont des estimations linéaires,
+    pas des garanties — utilisez-les pour orienter une décision, pas pour la remplacer.
+  </p>
+
+  <div class="panel">
+    <div class="field">
+      <label for="s-price">Variation de prix : <span id="s-price-value" class="figures">0%</span></label>
+      <input type="range" id="s-price" min="-50" max="50" value="0" step="1" style="width:100%;">
+    </div>
+    <div class="field">
+      <label for="s-volume">Variation du volume de ventes : <span id="s-volume-value" class="figures">0%</span></label>
+      <input type="range" id="s-volume" min="-50" max="50" value="0" step="1" style="width:100%;">
+    </div>
+    <div class="field">
+      <label for="s-ad">Variation du budget publicitaire : <span id="s-ad-value" class="figures">0%</span></label>
+      <input type="range" id="s-ad" min="-100" max="100" value="0" step="5" style="width:100%;">
+    </div>
+    <div class="field">
+      <label for="s-costs">Variation des autres coûts : <span id="s-costs-value" class="figures">0%</span></label>
+      <input type="range" id="s-costs" min="-50" max="50" value="0" step="1" style="width:100%;">
+    </div>
+  </div>
+
+  <div class="dash-grid-2col">
+    <div class="panel">
+      <h3>Situation actuelle</h3>
+      <div id="sim-current"></div>
+    </div>
+    <div class="panel">
+      <h3>Situation simulée</h3>
+      <div id="sim-simulated"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Impact estimé</h3>
+    <div id="sim-impact" class="kpi-value figures" style="font-size: 28px;"></div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/simulator.js') }}"></script>
+{% endblock %}

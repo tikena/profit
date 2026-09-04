@@ -1,0 +1,18 @@
+# Environnement virtuel Python
+.venv/
+venv/
+
+# Variables d'environnement (contient tes mots de passe et clÃ©s API)
+.env
+
+# Fichiers Python compilÃ©s
+__pycache__/
+*.pyc
+
+# Base de donnÃ©es SQLite locale (si utilisÃ©e pour des tests)
+*.db
+
+# Fichiers VS Code / systÃ¨me
+.vscode/
+.DS_Store
+Thumbs.db

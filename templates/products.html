@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Produits — Profit{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="dash-header">
+    <h1>Analyse des produits</h1>
+    <select id="period-select">
+      <option value="7d">7 derniers jours</option>
+      <option value="30d" selected>30 derniers jours</option>
+      <option value="month">Ce mois-ci</option>
+      <option value="year">Cette année</option>
+    </select>
+  </div>
+
+  <div id="empty-state" class="empty-state" style="display: none;">
+    <p>Aucun produit avec des ventes sur cette période.</p>
+    <a href="{{ url_for('dashboard.import_page') }}" class="btn btn-primary">Importer des données</a>
+  </div>
+
+  <div class="panel" id="products-panel" style="display: none;">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th>Ventes</th>
+          <th>CA</th>
+          <th>Coûts</th>
+          <th>Bénéfice</th>
+          <th>Marge</th>
+        </tr>
+      </thead>
+      <tbody id="products-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/products.js') }}"></script>
+{% endblock %}
