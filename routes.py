@@ -19,7 +19,7 @@ import logging
 from functools import wraps
 
 import stripe
-from flask import Blueprint, current_app, g, jsonify, request
+from flask import Blueprint, current_app, g, jsonify, redirect, request, url_for
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
@@ -45,18 +45,25 @@ PLAN_CATALOG = {
 # facturation — garder les deux synchronisés est une tâche manuelle.
 PRICE_DISPLAY = {
     "pro_monthly": {
-        "eur": {"amount": "9,99", "symbol": "€", "suffix": "/mois"},
-        "usd": {"amount": "10.99", "symbol": "$", "suffix": "/mo"},
-        "gbp": {"amount": "8.99", "symbol": "£", "suffix": "/mo"},
-        "mad": {"amount": "109", "symbol": "DH", "suffix": "/mois"},
-        "cad": {"amount": "14.99", "symbol": "$", "suffix": "/mo"},
+        "eur": {"amount": "6,99", "symbol": "€", "suffix": "/mois"},
+        "usd": {"amount": "7.69", "symbol": "$", "suffix": "/mo"},
+        "gbp": {"amount": "6.29", "symbol": "£", "suffix": "/mo"},
+        "mad": {"amount": "76", "symbol": "DH", "suffix": "/mois"},
+        "cad": {"amount": "10.49", "symbol": "$", "suffix": "/mo"},
+    },
+    "pro_yearly": {
+        "eur": {"amount": "69", "symbol": "€", "suffix": "/an"},
+        "usd": {"amount": "75.99", "symbol": "$", "suffix": "/an"},
+        "gbp": {"amount": "62.99", "symbol": "£", "suffix": "/an"},
+        "mad": {"amount": "753", "symbol": "DH", "suffix": "/an"},
+        "cad": {"amount": "103.99", "symbol": "$", "suffix": "/an"},
     },
     "business_monthly": {
-        "eur": {"amount": "29,99", "symbol": "€", "suffix": "/mois"},
-        "usd": {"amount": "32.99", "symbol": "$", "suffix": "/mo"},
-        "gbp": {"amount": "26.99", "symbol": "£", "suffix": "/mo"},
-        "mad": {"amount": "329", "symbol": "DH", "suffix": "/mois"},
-        "cad": {"amount": "44.99", "symbol": "$", "suffix": "/mo"},
+        "eur": {"amount": "18,99", "symbol": "€", "suffix": "/mois"},
+        "usd": {"amount": "20.89", "symbol": "$", "suffix": "/mo"},
+        "gbp": {"amount": "17.09", "symbol": "£", "suffix": "/mo"},
+        "mad": {"amount": "208", "symbol": "DH", "suffix": "/mois"},
+        "cad": {"amount": "28.50", "symbol": "$", "suffix": "/mo"},
     },
 }
 
@@ -66,7 +73,13 @@ def login_required(view):
     def wrapped(*args, **kwargs):
         user = getattr(g, "current_user", None)
         if user is None:
-            return jsonify({"error": "authentification requise"}), 401
+            # Une route /api/... est appelée en JavaScript : elle attend du
+            # JSON. Une page (dashboard, produits...) doit rediriger
+            # l'utilisateur vers la connexion plutôt que lui afficher un
+            # message d'erreur brut.
+            if request.path.startswith("/api/"):
+                return jsonify({"error": "authentification requise"}), 401
+            return redirect(url_for("login_page"))
         return view(*args, **kwargs)
 
     return wrapped

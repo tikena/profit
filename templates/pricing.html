@@ -43,7 +43,11 @@
 
     <div class="plan-card featured">
       <span class="plan-name">Pro</span>
-      <div class="plan-price figures" data-plan="pro_monthly">
+      <div class="billing-toggle">
+        <button type="button" class="toggle-option active" data-billing="monthly">Mensuel</button>
+        <button type="button" class="toggle-option" data-billing="yearly">Annuel <span class="toggle-save">-17%</span></button>
+      </div>
+      <div class="plan-price figures" data-plan="pro_monthly" data-plan-monthly="pro_monthly" data-plan-yearly="pro_yearly">
         <span data-price-amount></span><span class="period" data-price-suffix></span>
       </div>
       <ul class="plan-features">

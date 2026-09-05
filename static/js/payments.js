@@ -69,6 +69,28 @@ function applyCurrency(currency) {
   }
 }
 
+// Bascule mensuel/annuel : ne concerne que la carte Pro (Business n'a pas
+// encore d'offre annuelle). Change le plan_id affiché et facturé, puis
+// redemande l'affichage des prix dans la devise déjà sélectionnée.
+document.querySelectorAll('.billing-toggle').forEach((toggle) => {
+  const priceBlock = toggle.parentElement.querySelector('[data-plan]');
+  const buyButton = toggle.parentElement.querySelector('[data-plan-id]');
+
+  toggle.querySelectorAll('.toggle-option').forEach((option) => {
+    option.addEventListener('click', () => {
+      toggle.querySelectorAll('.toggle-option').forEach((o) => o.classList.remove('active'));
+      option.classList.add('active');
+
+      const billing = option.dataset.billing; // "monthly" ou "yearly"
+      const newPlanId = billing === 'yearly' ? priceBlock.dataset.planYearly : priceBlock.dataset.planMonthly;
+      priceBlock.dataset.plan = newPlanId;
+      buyButton.dataset.planId = newPlanId;
+
+      applyCurrency(selectedCurrency);
+    });
+  });
+});
+
 document.querySelectorAll('[data-plan-id]').forEach((button) => {
   button.addEventListener('click', async () => {
     const errorEl = document.getElementById('pricing-error');
