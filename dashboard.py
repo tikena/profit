@@ -18,7 +18,7 @@ from flask import Blueprint, g, jsonify, render_template, request
 import analytics
 import ai_advisor
 from models import Product, Transaction, TransactionType, db
-from routes import login_required
+from routes import email_verified_required, login_required
 
 logger = logging.getLogger("profit.dashboard")
 
@@ -86,30 +86,35 @@ def _get_or_create_product(user_id, name: str) -> Product:
 
 @dashboard_bp.route("/dashboard")
 @login_required
+@email_verified_required
 def dashboard_page():
     return render_template("dashboard.html", user=g.current_user)
 
 
 @dashboard_bp.route("/products")
 @login_required
+@email_verified_required
 def products_page():
     return render_template("products.html", user=g.current_user)
 
 
 @dashboard_bp.route("/simulator")
 @login_required
+@email_verified_required
 def simulator_page():
     return render_template("simulator.html", user=g.current_user)
 
 
 @dashboard_bp.route("/import")
 @login_required
+@email_verified_required
 def import_page():
     return render_template("import.html", user=g.current_user)
 
 
 @dashboard_bp.route("/api/dashboard/summary", methods=["GET"])
 @login_required
+@email_verified_required
 def api_summary():
     user = g.current_user
     start, end = _resolve_period(request.args.get("period", "30d"))
@@ -143,6 +148,7 @@ def api_summary():
 
 @dashboard_bp.route("/api/dashboard/simulate", methods=["POST"])
 @login_required
+@email_verified_required
 def api_simulate():
     user = g.current_user
     data = request.get_json(silent=True) or {}
@@ -172,6 +178,7 @@ def api_simulate():
 
 @dashboard_bp.route("/api/dashboard/transactions", methods=["POST"])
 @login_required
+@email_verified_required
 def api_add_transaction():
     """Ajout manuel d'une transaction unique (formulaire du tableau de
     bord, alternative à l'import CSV)."""
@@ -223,6 +230,7 @@ def api_add_transaction():
 
 @dashboard_bp.route("/api/dashboard/import", methods=["POST"])
 @login_required
+@email_verified_required
 def api_import_csv():
     """Import CSV. Colonnes attendues : type,category,amount,date,product,description
     (product et description optionnelles). L'import est atomique : si une

@@ -48,6 +48,14 @@ class User(db.Model):
     )
     current_period_end = db.Column(db.DateTime, nullable=True)
 
+    # Vérification de l'email par code à 6 chiffres envoyé à l'inscription.
+    # Le compte existe et peut se connecter dès l'inscription (pas bloquant),
+    # mais l'accès au tableau de bord est réservé aux emails vérifiés
+    # (voir email_verified_required dans auth.py).
+    email_verified = db.Column(db.Boolean, nullable=False, default=False)
+    verification_code = db.Column(db.String(6), nullable=True)
+    verification_code_expires = db.Column(db.DateTime, nullable=True)
+
     # Devise choisie par l'utilisateur pour la facturation (code ISO 4217,
     # minuscules, ex: "eur", "usd", "mad"). N'affecte que la présentation
     # et la devise de la session Stripe Checkout ; validée à chaque usage

@@ -85,6 +85,22 @@ def login_required(view):
     return wrapped
 
 
+def email_verified_required(view):
+    """À empiler après @login_required. Bloque l'accès au produit tant que
+    l'email n'a pas été confirmé par le code envoyé à l'inscription."""
+
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        user = g.current_user
+        if not user.email_verified:
+            if request.path.startswith("/api/"):
+                return jsonify({"error": "email non vérifié"}), 403
+            return redirect(url_for("verify_email_page"))
+        return view(*args, **kwargs)
+
+    return wrapped
+
+
 @payments_bp.route("/create-checkout-session", methods=["POST"])
 @login_required
 @limiter.limit("10 per minute")

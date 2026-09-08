@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Vérifier votre email — Profit{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="auth-card">
+    <h2>Vérifiez votre email</h2>
+    <p style="color: var(--paper-dim); font-size: 14px; margin-top: -8px;">
+      Un code à 6 chiffres a été envoyé à <strong>{{ user.email }}</strong>. Il expire dans 15 minutes.
+    </p>
+    <form id="verify-form">
+      <div class="field">
+        <label for="code">Code de vérification</label>
+        <input type="text" id="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
+               autocomplete="one-time-code" placeholder="000000" required
+               style="letter-spacing: 0.3em; text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 20px;">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width: 100%;">Vérifier</button>
+      <p class="error-msg" id="verify-error"></p>
+    </form>
+    <p style="text-align:center; font-size: 13px; color: var(--paper-dim); margin-top: 16px;">
+      Aucun email reçu ?
+      <button type="button" id="resend-btn" class="btn-link">Renvoyer le code</button>
+    </p>
+    <p id="resend-msg" style="text-align:center; font-size: 13px; color: var(--ledger-green); min-height: 1em;"></p>
+  </div>
+</div>
+
+<script>
+const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+document.getElementById('verify-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const errorEl = document.getElementById('verify-error');
+  errorEl.textContent = '';
+
+  try {
+    const res = await fetch('/api/auth/verify-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+      body: JSON.stringify({ code: document.getElementById('code').value.trim() }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      errorEl.textContent = data.error || 'Code invalide.';
+      return;
+    }
+    window.location.href = '/dashboard';
+  } catch (err) {
+    errorEl.textContent = 'Erreur réseau, réessayez.';
+  }
+});
+
+document.getElementById('resend-btn').addEventListener('click', async () => {
+  const msgEl = document.getElementById('resend-msg');
+  const errorEl = document.getElementById('verify-error');
+  msgEl.textContent = '';
+  errorEl.textContent = '';
+
+  try {
+    const res = await fetch('/api/auth/resend-code', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrfToken },
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      errorEl.textContent = data.error || "Impossible de renvoyer le code pour l'instant.";
+      return;
+    }
+    msgEl.textContent = 'Nouveau code envoyé.';
+  } catch (err) {
+    errorEl.textContent = 'Erreur réseau, réessayez.';
+  }
+});
+</script>
+{% endblock %}

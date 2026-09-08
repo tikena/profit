@@ -55,6 +55,8 @@ def create_app() -> Flask:
         # d'erreur : s'il est déjà connecté, direction le tableau de bord ;
         # sinon, direction l'inscription pour démarrer immédiatement.
         if g.current_user is not None:
+            if not g.current_user.email_verified:
+                return redirect(url_for("verify_email_page"))
             return redirect(url_for("dashboard.dashboard_page"))
         return redirect(url_for("register_page"))
 
@@ -65,14 +67,22 @@ def create_app() -> Flask:
     @app.get("/login")
     def login_page():
         if g.current_user is not None:
-            return redirect(url_for("dashboard.dashboard_page"))
+            return redirect(url_for("home_page"))
         return render_template("login.html")
 
     @app.get("/register")
     def register_page():
         if g.current_user is not None:
-            return redirect(url_for("dashboard.dashboard_page"))
+            return redirect(url_for("home_page"))
         return render_template("register.html")
+
+    @app.get("/verify-email")
+    def verify_email_page():
+        if g.current_user is None:
+            return redirect(url_for("login_page"))
+        if g.current_user.email_verified:
+            return redirect(url_for("dashboard.dashboard_page"))
+        return render_template("verify_email.html", user=g.current_user)
 
     with app.app_context():
         db.create_all()

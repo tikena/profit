@@ -6,19 +6,25 @@ Points de sécurité appliqués :
    salé automatiquement). Migration possible vers argon2 plus tard si besoin.
 2. Réponses volontairement identiques en cas d'email inconnu ou de mauvais mot de
    passe ("email ou mot de passe incorrect") pour ne pas révéler quels emails existent.
-3. Limitation du débit sur /login et /register pour freiner le brute-force.
+3. Limitation du débit sur /login, /register et /verify-email pour freiner le brute-force.
 4. Session Flask signée (SECRET_KEY) + cookies HttpOnly/Secure/SameSite (voir config.py).
 5. Régénération de session à la connexion pour éviter la fixation de session.
 6. Validation stricte des entrées (email, longueur du mot de passe) avant tout accès BDD.
+7. Vérification d'email par code à 6 chiffres, expirant après 15 minutes, jamais
+   comparé de façon prévisible (comparaison stricte + expiration systématique
+   vérifiée côté serveur).
 """
 
 import logging
+import random
 import re
 import uuid
+from datetime import datetime, timedelta
 
 from flask import Blueprint, g, jsonify, request, session
 from werkzeug.security import check_password_hash, generate_password_hash
 
+import mailer
 from models import User, db
 from routes import limiter
 
@@ -28,15 +34,24 @@ auth_bp = Blueprint("auth", __name__)
 
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 MIN_PASSWORD_LENGTH = 10
+VERIFICATION_CODE_LIFETIME_MINUTES = 15
 
 
-def _validate_credentials(email: str, password: str) -> str | None:
+def _validate_credentials(email: str, password: str):
     """Retourne un message d'erreur si invalide, sinon None."""
     if not email or not EMAIL_RE.match(email):
         return "adresse email invalide"
     if not password or len(password) < MIN_PASSWORD_LENGTH:
         return f"le mot de passe doit contenir au moins {MIN_PASSWORD_LENGTH} caractères"
     return None
+
+
+def _generate_and_send_code(user: User) -> None:
+    code = f"{random.randint(0, 999999):06d}"
+    user.verification_code = code
+    user.verification_code_expires = datetime.utcnow() + timedelta(minutes=VERIFICATION_CODE_LIFETIME_MINUTES)
+    db.session.commit()
+    mailer.send_verification_code(user.email, code)
 
 
 @auth_bp.route("/register", methods=["POST"])
@@ -63,9 +78,10 @@ def register():
     db.session.add(user)
     db.session.commit()
 
+    _generate_and_send_code(user)
     _start_session(user)
     logger.info("Nouveau compte créé user_id=%s", user.id)
-    return jsonify({"status": "compte créé", "email": user.email}), 201
+    return jsonify({"status": "compte créé", "email": user.email, "email_verified": False}), 201
 
 
 @auth_bp.route("/login", methods=["POST"])
@@ -82,7 +98,51 @@ def login():
         return generic_error
 
     _start_session(user)
-    return jsonify({"status": "connecté", "email": user.email}), 200
+    return jsonify({"status": "connecté", "email": user.email, "email_verified": user.email_verified}), 200
+
+
+@auth_bp.route("/verify-email", methods=["POST"])
+@limiter.limit("10 per minute")
+def verify_email():
+    user = g.current_user
+    if user is None:
+        return jsonify({"error": "authentification requise"}), 401
+
+    if user.email_verified:
+        return jsonify({"status": "déjà vérifié"}), 200
+
+    data = request.get_json(silent=True) or {}
+    submitted_code = str(data.get("code", "")).strip()
+
+    if (
+        not user.verification_code
+        or not user.verification_code_expires
+        or user.verification_code_expires < datetime.utcnow()
+    ):
+        return jsonify({"error": "code expiré, demandez-en un nouveau"}), 400
+
+    if submitted_code != user.verification_code:
+        return jsonify({"error": "code incorrect"}), 400
+
+    user.email_verified = True
+    user.verification_code = None
+    user.verification_code_expires = None
+    db.session.commit()
+
+    return jsonify({"status": "email vérifié"}), 200
+
+
+@auth_bp.route("/resend-code", methods=["POST"])
+@limiter.limit("3 per minute")
+def resend_code():
+    user = g.current_user
+    if user is None:
+        return jsonify({"error": "authentification requise"}), 401
+    if user.email_verified:
+        return jsonify({"status": "déjà vérifié"}), 200
+
+    _generate_and_send_code(user)
+    return jsonify({"status": "code renvoyé"}), 200
 
 
 @auth_bp.route("/logout", methods=["POST"])
@@ -102,6 +162,7 @@ def me():
             "plan": user.plan.value,
             "subscription_status": user.subscription_status.value,
             "is_premium": user.has_active_premium(),
+            "email_verified": user.email_verified,
         }
     ), 200
 

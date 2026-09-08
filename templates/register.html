@@ -23,6 +23,8 @@
 </div>
 
 <script>
+const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
 document.getElementById('register-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const errorEl = document.getElementById('register-error');
@@ -31,7 +33,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
   try {
     const res = await fetch('/api/auth/register', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
       body: JSON.stringify({
         email: document.getElementById('email').value,
         password: document.getElementById('password').value,
@@ -42,7 +44,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
       errorEl.textContent = data.error || 'Inscription impossible.';
       return;
     }
-    window.location.href = '/pricing';
+    window.location.href = '/';
   } catch (err) {
     errorEl.textContent = 'Erreur réseau, réessayez.';
   }
