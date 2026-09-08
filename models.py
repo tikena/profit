@@ -75,3 +75,48 @@ class ProcessedWebhookEvent(db.Model):
 
     stripe_event_id = db.Column(db.String(255), primary_key=True)
     processed_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class TransactionType(enum.Enum):
+    REVENUE = "revenue"
+    EXPENSE = "expense"
+
+
+class Product(db.Model):
+    """Un produit vendu par l'utilisateur. Sert à regrouper les
+    transactions pour l'analyse de rentabilité par produit."""
+
+    __tablename__ = "products"
+
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey("users.id"), nullable=False, index=True)
+    name = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (db.UniqueConstraint("user_id", "name", name="uq_product_user_name"),)
+
+
+class Transaction(db.Model):
+    """Une ligne de revenu ou de dépense. C'est la table brute à partir de
+    laquelle tous les calculs du tableau de bord sont dérivés — rien n'est
+    stocké en cache/pré-calculé, pour garantir que les chiffres reflètent
+    toujours les données réelles de l'utilisateur."""
+
+    __tablename__ = "transactions"
+
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey("users.id"), nullable=False, index=True)
+    product_id = db.Column(UUID(as_uuid=True), db.ForeignKey("products.id"), nullable=True, index=True)
+
+    type = db.Column(db.Enum(TransactionType), nullable=False)
+    # Catégorie libre : "vente", "publicité", "livraison", "commission",
+    # "frais de paiement", "remboursement", "salaire", "autre"...
+    category = db.Column(db.String(100), nullable=False)
+    amount = db.Column(db.Numeric(12, 2), nullable=False)
+    currency = db.Column(db.String(3), nullable=False, default="eur")
+    occurred_on = db.Column(db.Date, nullable=False, index=True)
+    description = db.Column(db.String(500), nullable=True)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    product = db.relationship("Product", backref="transactions")
