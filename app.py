@@ -9,12 +9,13 @@ from dotenv import load_dotenv
 load_dotenv()  # charge le fichier .env AVANT que Config ne lise les variables d'environnement
 
 import stripe
-from flask import Flask, g, render_template
+from flask import Flask, g, redirect, render_template, url_for
 from flask_talisman import Talisman
 from flask_wtf import CSRFProtect
 
 from auth import auth_bp, load_logged_in_user
 from config import Config
+from dashboard import dashboard_bp
 from models import db
 from routes import limiter, payments_bp
 
@@ -41,11 +42,21 @@ def create_app() -> Flask:
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(payments_bp, url_prefix="/api/payments")
+    app.register_blueprint(dashboard_bp)
 
     # Le webhook Stripe est vérifié par signature (voir routes.py), pas par
     # jeton CSRF : Stripe ne peut pas fournir de cookie de session, donc on
     # exempte UNIQUEMENT cette route précise, jamais tout le blueprint.
     csrf.exempt(app.view_functions["payments.stripe_webhook"])
+
+    @app.get("/")
+    def home_page():
+        # Un visiteur qui tape directement l'URL du site ne doit jamais voir
+        # d'erreur : s'il est déjà connecté, direction le tableau de bord ;
+        # sinon, direction l'inscription pour démarrer immédiatement.
+        if g.current_user is not None:
+            return redirect(url_for("dashboard.dashboard_page"))
+        return redirect(url_for("register_page"))
 
     @app.get("/pricing")
     def pricing_page():
@@ -53,10 +64,14 @@ def create_app() -> Flask:
 
     @app.get("/login")
     def login_page():
+        if g.current_user is not None:
+            return redirect(url_for("dashboard.dashboard_page"))
         return render_template("login.html")
 
     @app.get("/register")
     def register_page():
+        if g.current_user is not None:
+            return redirect(url_for("dashboard.dashboard_page"))
         return render_template("register.html")
 
     with app.app_context():
